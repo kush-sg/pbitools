@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pbitools — Free tools for Power BI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#FBFBFD; --grid-line:rgba(20,22,34,.045); --surface:#FFF; --surface-2:#F5F5F8;
+    --border:#E7E7EC; --border-strong:#D8D8E0; --ink:#16161C; --ink-2:#55555F; --ink-3:#8A8A94;
+    --accent:#5457E5; --accent-soft:#EDEDFE; --accent-ink:#3C3EC9;
+    --shadow:0 1px 2px rgba(20,22,34,.04),0 8px 24px rgba(20,22,34,.05);
+    --shadow-lift:0 2px 4px rgba(20,22,34,.05),0 18px 40px rgba(84,87,229,.10);
+  }
+  body.dark {
+    --bg:#0C0C12; --grid-line:rgba(255,255,255,.035); --surface:#14141C; --surface-2:#1B1B25;
+    --border:#26262F; --border-strong:#33333F; --ink:#F1F1F6; --ink-2:#A6A6B2; --ink-3:#6E6E7A;
+    --accent:#7B7DF0; --accent-soft:#1E1E33; --accent-ink:#A8AAFB;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    --shadow-lift:0 2px 4px rgba(0,0,0,.3),0 18px 40px rgba(0,0,0,.5);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.55; -webkit-font-smoothing:antialiased; transition:background .35s,color .35s; }
+  ::selection { background:var(--accent); color:#fff; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 28px; }
+
+  header { position:sticky; top:0; z-index:50; backdrop-filter:saturate(180%) blur(14px); background:color-mix(in srgb,var(--bg) 82%,transparent); border-bottom:1px solid var(--border); }
+  .nav { display:flex; align-items:center; justify-content:space-between; height:62px; }
+  .brand { display:flex; align-items:center; gap:10px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; letter-spacing:-.01em; text-decoration:none; color:var(--ink); position:relative; }
+  .mascot { width:28px; height:28px; display:block; }
+  .mascot .eye { transform-box:fill-box; transform-origin:center; animation:blink 6s infinite; }
+  @keyframes blink { 0%,94%,100%{ transform:scaleY(1);} 97%{ transform:scaleY(.1);} }
+  .brand b{ color:var(--ink);} .brand em{ color:var(--ink-3); font-style:normal; font-weight:500; }
+  .tip { position:absolute; left:38px; top:50%; transform:translateY(-50%) translateX(-4px); background:var(--ink); color:var(--bg); font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:500; padding:4px 9px; border-radius:7px; white-space:nowrap; opacity:0; pointer-events:none; transition:.22s; letter-spacing:.02em; }
+  .brand:hover .tip { opacity:1; transform:translateY(-50%) translateX(0); }
+  .nav-right { display:flex; align-items:center; gap:6px; }
+  .nav-link { font-size:14px; font-weight:500; color:var(--ink-2); text-decoration:none; padding:8px 12px; border-radius:8px; transition:.18s; }
+  .nav-link:hover { color:var(--ink); background:var(--surface-2); }
+  .nav-link.active { color:var(--accent-ink); }
+  .toggle { width:34px; height:34px; border-radius:9px; border:1px solid var(--border); background:var(--surface); color:var(--ink-2); cursor:pointer; margin-left:6px; display:grid; place-items:center; transition:.18s; }
+  .toggle:hover { color:var(--ink); border-color:var(--border-strong); }
+
+  .hero { position:relative; padding:84px 0 44px; overflow:hidden; }
+  .hero::before { content:""; position:absolute; inset:-1px 0 0 0; z-index:0; background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px); background-size:34px 34px; -webkit-mask-image:radial-gradient(120% 100% at 50% 0%,#000 35%,transparent 78%); mask-image:radial-gradient(120% 100% at 50% 0%,#000 35%,transparent 78%); }
+  .hero .wrap { position:relative; z-index:1; }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:550; color:var(--accent-ink); background:var(--accent-soft); border:1px solid color-mix(in srgb,var(--accent) 22%,transparent); padding:5px 12px; border-radius:100px; margin-bottom:22px; }
+  .eyebrow .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent); }
+  h1 { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(34px,6vw,56px); line-height:1.03; letter-spacing:-.025em; max-width:15ch; }
+  h1 .hl { color:var(--accent); }
+  .sub { font-size:clamp(16px,2vw,19px); color:var(--ink-2); max-width:52ch; margin-top:20px; }
+  .hero-meta { display:flex; gap:26px; margin-top:30px; flex-wrap:wrap; }
+  .hero-meta div { font-size:13.5px; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
+  .hero-meta b { color:var(--ink); font-weight:600; font-family:'Space Grotesk',sans-serif; }
+  .check { color:var(--accent); }
+
+  .sec-head { display:flex; align-items:baseline; justify-content:space-between; margin:46px 0 20px; }
+  .sec-head h2 { font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
+  .sec-head .count { font-size:13px; color:var(--ink-3); font-family:'JetBrains Mono',monospace; }
+
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .card { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:15px; padding:20px; min-height:168px; display:flex; flex-direction:column; box-shadow:var(--shadow); transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s,border-color .22s; text-decoration:none; color:inherit; }
+  .card.live { border-color:color-mix(in srgb,var(--accent) 40%,var(--border)); }
+  .card.live::after { content:""; position:absolute; left:0; top:18px; bottom:18px; width:3px; background:var(--accent); border-radius:0 3px 3px 0; }
+  .card.live:hover { transform:translateY(-3px); box-shadow:var(--shadow-lift); }
+  .card.soon { opacity:.62; }
+  .card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .icn { width:38px; height:38px; border-radius:10px; display:grid; place-items:center; background:var(--surface-2); border:1px solid var(--border); }
+  .card.live .icn { background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 25%,transparent); }
+  .icn svg { width:19px; height:19px; }
+  .tag { font-size:11px; font-family:'JetBrains Mono',monospace; font-weight:500; padding:3px 9px; border-radius:100px; letter-spacing:.02em; }
+  .tag.new { color:#fff; background:var(--accent); }
+  .tag.soon { color:var(--ink-3); background:var(--surface-2); border:1px solid var(--border); }
+  .card h3 { font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:600; letter-spacing:-.01em; margin-bottom:5px; }
+  .card p { font-size:13.5px; color:var(--ink-2); line-height:1.5; }
+  .card .go { margin-top:auto; font-size:13px; font-weight:550; color:var(--accent-ink); display:flex; align-items:center; gap:6px; padding-top:14px; }
+  .card.soon .go { color:var(--ink-3); }
+
+  footer { margin-top:64px; border-top:1px solid var(--border); padding:26px 0; }
+  .foot { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:13px; color:var(--ink-3); }
+  .made { display:flex; align-items:center; gap:8px; }
+  .made .mascot { width:22px; height:22px; }
+  .made b { color:var(--ink-2); font-weight:600; }
+  .foot .note { font-family:'JetBrains Mono',monospace; font-size:12px; }
+
+  /* Live mini-demo */
+  .demo { display:grid; grid-template-columns:300px 1fr; gap:0; margin-top:38px; border:1px solid var(--border); border-radius:18px; overflow:hidden; box-shadow:var(--shadow-lift); background:var(--surface); }
+  .demo-side { padding:24px; border-right:1px solid var(--border); }
+  .demo-label { display:inline-flex; align-items:center; gap:7px; font-size:11.5px; font-weight:600; letter-spacing:.03em; color:var(--accent-ink); text-transform:uppercase; margin-bottom:12px; }
+  .demo-label .mascot { width:18px; height:18px; }
+  .demo-side h3 { font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:600; letter-spacing:-.01em; margin-bottom:18px; }
+  .demo-field { margin-bottom:13px; }
+  .demo-field label { display:block; font-size:12px; font-weight:550; color:var(--ink-2); margin-bottom:6px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .inp { width:100%; padding:9px 12px; font-family:'JetBrains Mono',monospace; font-size:13px; border:1px solid var(--border-strong); border-radius:9px; background:var(--bg); color:var(--ink); outline:none; transition:.15s; }
+  .inp:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .seg { display:flex; background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:3px; gap:3px; }
+  .seg button { flex:1; border:0; background:transparent; padding:8px; font-size:12.5px; font-weight:550; color:var(--ink-2); border-radius:6px; cursor:pointer; font-family:inherit; transition:.15s; }
+  .seg button.on { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.06); }
+  body.dark .seg button.on { background:var(--border-strong); }
+  .demo-full { display:inline-flex; align-items:center; gap:6px; margin-top:18px; font-size:13px; font-weight:550; color:var(--accent-ink); text-decoration:none; }
+  .demo-full:hover { gap:9px; }
+  .demo-out { background:var(--code-bg,#14141B); display:flex; flex-direction:column; }
+  body.dark .demo-out { background:#08080C; }
+  .demo-outbar { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08); }
+  .demo-outbar .lang { font-family:'JetBrains Mono',monospace; font-size:11px; color:#8a8aa0; letter-spacing:.04em; }
+  .demo-copy { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:550; color:#E7E7F0; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); padding:6px 12px; border-radius:8px; cursor:pointer; font-family:inherit; transition:.15s; }
+  .demo-copy:hover { background:rgba(255,255,255,.16); }
+  .demo-copy.done { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .demo-out pre { margin:0; padding:16px 18px; overflow-x:auto; max-height:340px; }
+  .demo-out code { font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.75; color:#E7E7F0; white-space:pre; }
+  .demo-out .k{ color:#c792ea;} .demo-out .f{ color:#82aaff;} .demo-out .s{ color:#c3e88d;} .demo-out .n{ color:#f78c6c;} .demo-out .c{ color:#5f6785; font-style:italic;}
+
+  @media (max-width:860px){ .grid{ grid-template-columns:repeat(2,1fr);} .demo{ grid-template-columns:1fr;} .demo-side{ border-right:0; border-bottom:1px solid var(--border);} }
+  @media (max-width:560px){ .grid{ grid-template-columns:1fr;} .nav-link:not(.active){ display:none;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="index.html">
+      <svg class="mascot" viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="18" fill="var(--accent)"/>
+        <circle class="eye" cx="24" cy="28" r="5" fill="#fff"/>
+        <circle class="eye" cx="44" cy="28" r="5" fill="#fff"/>
+        <path d="M22 44 Q32 52 42 44" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+      </svg>
+      <span><b>pbitools</b><em>.dev</em></span>
+      <span class="tip">a Doodle project</span>
+    </a>
+    <div class="nav-right">
+      <a class="nav-link active" href="index.html">Tools</a>
+      <a class="nav-link" href="index.html">Learn</a>
+      <a class="nav-link" href="index.html">About</a>
+      <button class="toggle" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
+        <svg id="ic-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow"><span class="dot"></span> Free · no signup · runs in your browser</span>
+    <h1>Free tools for <span class="hl">Power BI</span>.</h1>
+    <p class="sub">A growing toolbox for report developers. Generate the code you always end up googling — date tables, measures, and more — then copy it straight into your model.</p>
+    <div class="hero-meta">
+      <div><span class="check">✓</span> <b>$0</b>&nbsp;forever</div>
+      <div><span class="check">✓</span> Nothing&nbsp;<b>uploaded</b></div>
+      <div><span class="check">✓</span> Copy &amp;&nbsp;<b>paste</b></div>
+    </div>
+
+    <div class="demo">
+      <div class="demo-side">
+        <span class="demo-label">
+          <svg class="mascot" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="var(--accent)"/><circle cx="24" cy="28" r="5" fill="#fff"/><circle cx="44" cy="28" r="5" fill="#fff"/><path d="M22 44 Q32 52 42 44" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/></svg>
+          Try it now
+        </span>
+        <h3>A date table in one paste</h3>
+        <div class="demo-field row2">
+          <div><label for="dStartY">Start year</label><input class="inp" id="dStartY" type="number" value="2020" min="1900" max="2100"></div>
+          <div><label for="dEndY">End year</label><input class="inp" id="dEndY" type="number" value="2026" min="1900" max="2100"></div>
+        </div>
+        <div class="demo-field">
+          <label>Format</label>
+          <div class="seg" id="dFmt"><button data-fmt="dax" class="on">DAX table</button><button data-fmt="m">Power Query</button></div>
+        </div>
+        <a class="demo-full" href="date-table.html">Full tool — fiscal year, pick columns →</a>
+      </div>
+      <div class="demo-out">
+        <div class="demo-outbar">
+          <span class="lang" id="dLang">DAX · calculated table</span>
+          <button class="demo-copy" id="dCopy"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span id="dCopyLabel">Copy</span></button>
+        </div>
+        <pre><code id="dCode"></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="sec-head">
+    <h2>Tools</h2>
+    <span class="count">1 live · more coming</span>
+  </div>
+
+  <div class="grid">
+    <a class="card live" href="date-table.html">
+      <div class="card-top">
+        <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01"/></svg></div>
+        <span class="tag new">v1 · new</span>
+      </div>
+      <h3>Date Table Generator</h3>
+      <p>Build a full DAX or Power Query date table — fiscal year, custom columns, any range.</p>
+      <span class="go">Open tool →</span>
+    </a>
+
+    <div class="card soon">
+      <div class="card-top"><div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg></div><span class="tag soon">soon</span></div>
+      <h3>SVG Measure Studio</h3>
+      <p>Design a KPI card or progress bar visually, get the DAX measure that renders it.</p>
+      <span class="go">Coming soon</span>
+    </div>
+
+    <div class="card soon">
+      <div class="card-top"><div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><span class="tag soon">soon</span></div>
+      <h3>HTML Visual Playground</h3>
+      <p>Write custom HTML visuals with a live preview, then export into Power BI. With a guide.</p>
+      <span class="go">Coming soon</span>
+    </div>
+
+    <div class="card soon">
+      <div class="card-top"><div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></div><span class="tag soon">soon</span></div>
+      <h3>Theme Color Picker</h3>
+      <p>Pick a palette, get a ready-to-import Power BI theme JSON with matched data colors.</p>
+      <span class="go">Coming soon</span>
+    </div>
+
+    <div class="card soon">
+      <div class="card-top"><div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></div><span class="tag soon">soon</span></div>
+      <h3>DAX Formatter</h3>
+      <p>Paste a messy measure, get clean, readable, indented DAX in one click.</p>
+      <span class="go">Coming soon</span>
+    </div>
+
+    <div class="card soon">
+      <div class="card-top"><div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div><span class="tag soon">soon</span></div>
+      <h3>Your idea here</h3>
+      <p>The toolbox grows one card at a time. Nothing to re-architect — just add the next tool.</p>
+      <span class="go">Coming soon</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <span class="made">
+      <svg class="mascot" viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="18" fill="var(--accent)"/>
+        <circle class="eye" cx="24" cy="28" r="5" fill="#fff"/><circle class="eye" cx="44" cy="28" r="5" fill="#fff"/>
+        <path d="M22 44 Q32 52 42 44" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+      </svg>
+      crafted by <b>Doodle</b> · not affiliated with Microsoft
+    </span>
+    <span class="note">© 2026 pbitools.dev</span>
+  </div>
+</footer>
+
+<script>
+  const body = document.body, tbtn = document.getElementById('themeBtn');
+  const sunSVG = document.getElementById('ic-sun').outerHTML;
+  const moonSVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  tbtn.addEventListener('click', () => {
+    body.classList.toggle('dark');
+    tbtn.innerHTML = body.classList.contains('dark') ? moonSVG : sunSVG;
+  });
+
+  // ---- Homepage live mini-demo (essentials only; full options on date-table.html) ----
+  const SIG = '// generated with pbitools.dev · a Doodle tool';
+  const daxCols = [
+    ['Year','YEAR ( [Date] )'], ['Quarter','"Q" & FORMAT ( [Date], "Q" )'],
+    ['MonthNo','MONTH ( [Date] )'], ['Month','FORMAT ( [Date], "MMM" )'],
+    ['Day','DAY ( [Date] )'], ['DayName','FORMAT ( [Date], "dddd" )'],
+    ['WeekNum','WEEKNUM ( [Date] )'], ['IsWeekend','WEEKDAY ( [Date], 2 ) > 5']
+  ];
+  const mCols = [
+    ['Year','Date.Year([Date])','Int64.Type'], ['Quarter','"Q" & Text.From(Date.QuarterOfYear([Date]))','type text'],
+    ['MonthNo','Date.Month([Date])','Int64.Type'], ['Month','Date.ToText([Date], "MMM")','type text'],
+    ['Day','Date.Day([Date])','Int64.Type'], ['DayName','Date.DayOfWeekName([Date])','type text'],
+    ['WeekNum','Date.WeekOfYear([Date])','Int64.Type'], ['IsWeekend','Date.DayOfWeek([Date], Day.Monday) >= 5','type logical']
+  ];
+  function demoDax(sY, eY){
+    const pad = Math.max(...daxCols.map(c => c[0].length)) + 2;
+    const lines = daxCols.map((c, i) => `    ${(`"${c[0]}",`).padEnd(pad + 3)}${c[1]}${i === daxCols.length - 1 ? '' : ','}`);
+    return `DateTable =\nVAR _start = DATE(${sY}, 1, 1)\nVAR _end   = DATE(${eY}, 12, 31)\nRETURN\nADDCOLUMNS (\n    CALENDAR ( _start, _end ),\n${lines.join('\n')}\n)\n\n${SIG}`;
+  }
+  function demoM(sY, eY){
+    let prev = 'Typed';
+    const steps = mCols.map(c => { const s = `    ${c[0]} = Table.AddColumn(${prev}, "${c[0]}", each ${c[1]}, ${c[2]}),`; prev = c[0]; return s; });
+    return `${SIG}\nlet\n    StartDate = #date(${sY}, 1, 1),\n    EndDate = #date(${eY}, 12, 31),\n    DayCount = Duration.Days(EndDate - StartDate) + 1,\n    Source = List.Dates(StartDate, DayCount, #duration(1, 0, 0, 0)),\n    ToTable = Table.FromList(Source, Splitter.SplitByNothing(), {"Date"}, null, ExtraValues.Error),\n    Typed = Table.TransformColumnTypes(ToTable, {{"Date", type date}}),\n${steps.join('\n')}\nin\n    ${prev}`;
+  }
+  function hl(src){
+    const esc = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const re = /(\/\/[^\n]*)|("(?:[^"\\]|\\.)*")|(\b\d+\b)|(\b(?:VAR|RETURN|IF|let|in|each|type|true|false|then|else)\b)|(#?[A-Za-z][A-Za-z0-9_.]*(?=\s*\())/g;
+    return esc.replace(re, (m, cmt, str, num, kw, fn) =>
+      cmt ? `<span class="c">${cmt}</span>` : str ? `<span class="s">${str}</span>` :
+      num ? `<span class="n">${num}</span>` : kw ? `<span class="k">${kw}</span>` :
+      fn ? `<span class="f">${m}</span>` : m);
+  }
+  const d = id => document.getElementById(id);
+  let demoFmt = 'dax', demoCode = '';
+  function demoRender(){
+    let sY = parseInt(d('dStartY').value, 10) || 2020;
+    let eY = parseInt(d('dEndY').value, 10) || sY;
+    if (eY < sY) eY = sY;
+    demoCode = demoFmt === 'dax' ? demoDax(sY, eY) : demoM(sY, eY);
+    d('dCode').innerHTML = hl(demoCode);
+    d('dLang').textContent = demoFmt === 'dax' ? 'DAX · calculated table' : 'Power Query (M)';
+  }
+  document.querySelectorAll('#dFmt button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#dFmt button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); demoFmt = b.dataset.fmt; demoRender();
+  }));
+  ['dStartY','dEndY'].forEach(id => d(id).addEventListener('input', demoRender));
+  const dCopy = d('dCopy'), dCopyLabel = d('dCopyLabel');
+  dCopy.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(demoCode); }
+    catch(e){ const ta = document.createElement('textarea'); ta.value = demoCode; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+    dCopy.classList.add('done'); dCopyLabel.textContent = 'Doodle grabbed it ✓';
+    setTimeout(() => { dCopy.classList.remove('done'); dCopyLabel.textContent = 'Copy'; }, 1600);
+  });
+  demoRender();
+</script>
+</body>
+</html>
